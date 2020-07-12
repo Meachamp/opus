@@ -30,6 +30,8 @@ class OpusEncoder : public ObjectWrap<OpusEncoder> {
 		~OpusEncoder();
 
 		Napi::Value Encode(const CallbackInfo& args);
+
+		Napi::Value DecodePacketloss(const CallbackInfo& args);
 		
 		Napi::Value Decode(const CallbackInfo& args);
 		

@@ -133,6 +133,33 @@ Napi::Value OpusEncoder::Decode(const CallbackInfo& args) {
 	if (!actualBuf.IsEmpty()) return actualBuf;
 }
 
+Napi::Value OpusEncoder::DecodePacketloss(const CallbackInfo& args) {
+	Napi::Env env = args.Env();
+
+	if (this->EnsureDecoder() != OPUS_OK) {
+		Napi::Error::New(env, "Could not create decoder. Check the decoder parameters").ThrowAsJavaScriptException();
+	}
+	
+	int decodedSamples = opus_decode(
+		this->decoder,
+		0,
+		0,
+		&(this->outPcm[0]),
+		480,
+		/* decode_fec */ 0
+	);
+	
+	if (decodedSamples < 0) {
+		Napi::TypeError::New(env, getDecodeError(decodedSamples)).ThrowAsJavaScriptException();
+	}
+
+	int decodedLength = decodedSamples * 2 * this->channels;
+	
+	Buffer<char> actualBuf = Buffer<char>::Copy(env, reinterpret_cast<char*>(this->outPcm), decodedLength);
+
+	if (!actualBuf.IsEmpty()) return actualBuf;
+}
+
 void OpusEncoder::ApplyEncoderCTL(const CallbackInfo& args) {
 	Napi::Env env = args.Env();
 	
